@@ -10,6 +10,8 @@ from constants import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
     LINE_WIDTH,
+    ASTEROID_MIN_RADIUS,
+    ASTEROID_MAX_RADIUS,
 )
 
 class Player(CircleShape):
@@ -18,13 +20,30 @@ class Player(CircleShape):
         self.rotation = 0
         self.shoot_timer = 0.0
         self.invulnerable_timer = 0.0
-        self.weapon_mode = "Single"  # Available: "Single", "Spread", "Sniper"
+        self.weapon_mode = "Single"
+        self.shield_pct = 100.0
 
     def respawn(self, x: float, y: float) -> None:
         self.position = pygame.Vector2(x, y)
         self.velocity = pygame.Vector2(0, 0)
         self.rotation = 0
         self.invulnerable_timer = 3.0
+        self.shield_pct = 100.0
+
+    def calculate_shield_damage(self, asteroid_radius: float, level: int) -> float:
+        """Computes shield damage percent based on current level configuration."""
+        if level == 1:
+            # 5 hits of any size = 20% each
+            return 20.0
+        # Levels 2-5: Min radius takes X hits, Max radius takes 1 hit (100%)
+        min_hits_map = {2: 5, 3: 4, 4: 3, 5: 2}
+        min_hits = min_hits_map.get(level, 2)
+        damage_min = 100.0 / min_hits
+        damage_max = 100.0
+
+        t = (asteroid_radius - ASTEROID_MIN_RADIUS) / max(1.0, (ASTEROID_MAX_RADIUS - ASTEROID_MIN_RADIUS))
+        t = max(0.0, min(1.0, t))
+        return damage_min + t * (damage_max - damage_min)
 
     def triangle(self) -> list[pygame.Vector2]:
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -37,7 +56,12 @@ class Player(CircleShape):
     def draw(self, screen: pygame.Surface) -> None:
         if self.invulnerable_timer > 0 and int(self.invulnerable_timer * 10) % 2 == 0:
             return
+
         pygame.draw.polygon(screen, "white", self.triangle(), LINE_WIDTH)
+        # Draw glowing protective energy bubble if shield is active
+        if self.shield_pct > 0:
+            color = (0, int(255 * (self.shield_pct / 100.0)), 255)
+            pygame.draw.circle(screen, color, self.position, self.radius + 6, 1)
 
     def rotate(self, dt: float) -> None:
         self.rotation += TURN_SPEED * dt
@@ -45,26 +69,22 @@ class Player(CircleShape):
     def move(self, dt: float) -> None:
         unit_vector = pygame.Vector2(0, 1)
         rotated_vector = unit_vector.rotate(self.rotation)
-        rotated_with_speed_vector = rotated_vector * PLAYER_SPEED * dt
-        self.position += rotated_with_speed_vector
+        self.position += rotated_vector * PLAYER_SPEED * dt
 
     def shoot(self) -> None:
         if self.shoot_timer > 0:
             return
 
         direction = pygame.Vector2(0, 1).rotate(self.rotation)
-
         if self.weapon_mode == "Single":
             self.shoot_timer = SHOT_COOLDOWN_SECONDS
             shot = Shot(self.position.x, self.position.y)
             shot.velocity = direction * SHOT_SPEED
-
         elif self.weapon_mode == "Spread":
             self.shoot_timer = SHOT_COOLDOWN_SECONDS * 1.8
             for angle in (-15, 0, 15):
                 shot = Shot(self.position.x, self.position.y, radius=4, color="yellow")
                 shot.velocity = direction.rotate(angle) * (SHOT_SPEED * 0.9)
-
         elif self.weapon_mode == "Sniper":
             self.shoot_timer = SHOT_COOLDOWN_SECONDS * 3.0
             shot = Shot(self.position.x, self.position.y, radius=7, color="cyan")
@@ -86,7 +106,6 @@ class Player(CircleShape):
             self.move(-dt)
         if keys[pygame.K_SPACE]:
             self.shoot()
-        # Weapon Selection
         if keys[pygame.K_1]:
             self.weapon_mode = "Single"
         elif keys[pygame.K_2]:
