@@ -1,3 +1,5 @@
+![G5LIVE — Build · Understand · Apply](assets/brand/g5live.svg)
+
 # Asteroids
 
 A Python/Pygame arcade game started through Boot.dev's [Build Asteroids using Python and Pygame](https://www.boot.dev/courses/build-asteroids-python) guided project, then extended with scoring, weapons, effects and a five-level survival campaign.
@@ -92,3 +94,7 @@ The campaign saves the top 10 scores to `leaderboard.json` in the working direct
 - Two-player connectivity across two devices.
 
 These are planned features, not currently supported capabilities.
+
+## Shared brand and release preparation
+
+Part of the G5LIVE app family. See the [shared brand guide](assets/brand/BRAND.md) and [project-specific release-readiness review](docs/RELEASE_READINESS.md) for proposed functionality and public-release preparation.

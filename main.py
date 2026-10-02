@@ -150,6 +150,7 @@ def game_over_screen(screen: pygame.Surface, font_title: pygame.font.Font, font_
 
 def main() -> None:
     pygame.init()
+    pygame.display.set_caption("G5LIVE | Asteroids")
     pygame.font.init()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
