@@ -2,13 +2,13 @@
 
 # Asteroids
 
-A Python/Pygame arcade game started through Boot.dev's [Build Asteroids using Python and Pygame](https://www.boot.dev/courses/build-asteroids-python) guided project, then extended with scoring, weapons, effects and a five-level survival campaign.
+A Python/Pygame game started through Boot.dev's guided Asteroids project, then extended with weapons, shields, scoring and a five-level survival campaign.
 
-The course provided practice with multi-file Python projects, object-oriented programming, sprite groups, vectors, game loops and collision detection. The developments below build on that foundation.
+**Build · Understand · Apply.** It gives me a practical way to explore Python classes, vectors, collisions and game state. Further development is an optional side project alongside my main cybersecurity goals.
 
 ## Run the game
 
-Requires Python **3.13+**, [uv](https://docs.astral.sh/uv/) and a graphical desktop. Pygame **2.6.1** is pinned in the project dependencies.
+Requires Python **3.13+**, `uv` and a graphical desktop. The project uses Pygame **2.6.1**.
 
 ```bash
 git clone https://github.com/g5live/asteroids.git
@@ -17,84 +17,41 @@ uv sync
 uv run main.py
 ```
 
-For an existing checkout, run the last two commands from its project directory. Boot.dev CLI login is not required to play.
+Boot.dev CLI login is not needed to play.
 
 ## Controls
 
 | Key | Action |
-| --- | --- |
-| `W` / `S` | Move forwards / backwards |
-| `A` / `D` | Rotate left / right |
-| `Space` | Fire |
-| `1` | Single shot |
-| `2` | Three-shot spread |
-| `3` | Faster sniper projectile with a longer firing cooldown |
+|---|---|
+| W / S | Move forwards / backwards |
+| A / D | Rotate |
+| Space | Fire |
+| 1 / 2 / 3 | Single / Spread / Sniper weapon |
+| Space or Enter | Start the next level briefing |
 | Close window | Quit |
 
-Press **Space or Enter** to start each level. At game over, enter **2–3 initials**, use Backspace to correct them, then Enter to save. After saving, Enter or Escape exits.
+At the score screen, enter **2–3 initials** and press Enter to save. Backspace corrects them; after saving, Enter or Escape exits.
 
-## Developments after the guided project
+## What works today
 
-- **Scoring:** small asteroids award 100 points, medium 50 and large 20 when shot.
-- **Multiple lives and respawning:** return to the centre with a short invulnerability period after losing a life.
-- **Explosion effects:** particles appear when asteroids break apart.
-- **Screen wrapping:** the ship and asteroids wrap around the play area; shots still despawn off-screen.
-- **Background image support:** place `background.png` in the project directory to use your own image. Without one, the game generates a starfield and space-dust background.
-- **Weapon types:** Single, Spread and Sniper have different projectile patterns, speeds and cooldowns.
-- **Lumpy asteroids:** irregular polygon outlines replace perfect circles visually.
-- **Triangular ship hitbox:** collision checks use the ship's triangle rather than only a circular player boundary. Asteroid collision geometry remains radius-based, with simplified triangle overlap checks.
-- **Shields:** the campaign adds a visible shield with damage scaled by level and asteroid size.
-- **Five levels:** increasingly demanding asteroid speed, spawn frequency and shield rules.
-- **Collectable shield tokens:** `S` pickups restore 25 percentage points, capped at 100%; new tokens spawn periodically, approximately every 18 seconds of play.
-- **Level briefings:** quick rules/status appear before each level.
-- **Timed survival:** each level lasts up to 120 seconds; survive the timer to advance, or end the run when all lives are lost.
-- **Persistent leaderboard:** a local top 10 with 2–3 initials after game over or completing Level 5.
+- Five increasingly demanding levels, each lasting 120 seconds.
+- Three starting lives, shields and brief invulnerability after respawning.
+- Three weapons with different patterns, speeds and cooldowns.
+- Shield pickups restoring 25 percentage points, capped at 100%.
+- Irregular asteroid shapes, explosion particles and screen wrapping for the ship/asteroids.
+- Scoring: small asteroids 100 points, medium 50 and large 20.
+- A local top-10 leaderboard saved in `leaderboard.json` in the working directory.
 
-## Five-level campaign rules
+Survive a level to advance; losing all lives ends the run. Shields reset at each level and respawn. Later levels increase asteroid speed/spawn frequency and make larger asteroids more damaging. A hit depleting the shield does not itself cost a life; a later hit with no shield does.
 
-The campaign starts with **three lives**. Each level begins with a full shield, and respawning also restores the shield with a short invulnerability period.
+Use the same working directory to retain the same leaderboard. Add `background.png` there for a custom background; otherwise a starfield is generated.
 
-All speed and spawn-frequency changes below are relative to the **Level 1 baseline**, not cumulative increases from the previous level.
+## Current limits and next steps
 
-| Level | Asteroid speed | Spawn frequency | Full shield absorbs | Duration |
-| --- | --- | --- | --- | --- |
-| 1 | Slow/base speed | Base rate | 5 hits of any asteroid size | 120 seconds |
-| 2 | +10% | Base rate | 5 minimum-radius hits or 1 maximum-radius hit | 120 seconds |
-| 3 | +10% | +10% | 4 minimum-radius hits or 1 maximum-radius hit | 120 seconds |
-| 4 | +20% | +10% | 3 minimum-radius hits or 1 maximum-radius hit | 120 seconds |
-| 5 | +25% | +25% | 2 minimum-radius hits or 1 maximum-radius hit | 120 seconds |
+This is a desktop game; mobile controls, packaged downloads and multiplayer are not implemented. Ship collision checks use a triangle, while asteroids still use simplified radius-based geometry.
 
-On Levels 2–5, intermediate asteroid sizes cause proportionally scaled shield damage. These hit counts describe shield depletion: a collision while shield remains reduces it to a minimum of zero; a subsequent collision with no shield costs a life. Shield pickups can extend survival.
+Next useful work is pause/restart, clearer settings, more reliable score storage and tests for collisions, shields and level changes. More environments, weapon limits, mobile support and two-device play remain later ideas.
 
-The baseline spawns an asteroid approximately every 0.8 seconds; a higher spawn-frequency multiplier shortens that interval. Asteroid fragments also accelerate when split.
+`main.py` manages the campaign; player, asteroid, projectile, pickup and leaderboard modules keep the main behaviours separate. Packaging and platform claims need testing before a release.
 
-### Leaderboard storage
-
-The campaign saves the top 10 scores to `leaderboard.json` in the working directory. Run from the same project directory to keep using the same table. Scores persist between launches while that file remains available; this is a local leaderboard, not an online service or cloud backup.
-
-## Project layout
-
-| File | Responsibility |
-| --- | --- |
-| `main.py` | Game loop, collisions, scoring and game state and campaign screens |
-| `player.py` | Movement, weapons, ship geometry and respawning and shield logic |
-| `asteroid.py` / `asteroidfield.py` | Asteroid appearance, splitting and spawning |
-| `circleshape.py` | Shared sprite geometry and movement helpers |
-| `shot.py` / `particle.py` | Projectiles and explosion particles |
-| `background.py` | Load a background image or generate a starfield |
-| `constants.py` | Screen dimensions and base tuning values |
-| `logger.py` | Game event/state logging |
-| `powerup.py` / `leaderboard.py` | Shield pickups and score persistence |
-
-## Future development
-
-- Additional levels in different settings.
-- Weapon-use limits, such as ammunition or energy constraints.
-- Android and Apple mobile compatibility (iOS/iPadOS), including suitable controls and packaging.
-- Two-player connectivity across two devices.
-
-These are planned features, not currently supported capabilities.
-
-## Shared brand and release preparation
-
-Part of the G5LIVE app family. See the [shared brand guide](assets/brand/BRAND.md) and [project-specific release-readiness review](docs/RELEASE_READINESS.md) for proposed functionality and public-release preparation.
+Part of the G5LIVE app family. See the [brand guide](assets/brand/BRAND.md) and [release-readiness notes](docs/RELEASE_READINESS.md).
